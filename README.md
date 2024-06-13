@@ -91,14 +91,13 @@ Because we use transfer learning we don't have to worry about the architecture o
 
 ## hyperparameters 
 
-| Hyperparameter            | Value |
-| ------------------------- | ----- |
-| Batch size                | 32    |
-| Epochs                    | 10    |
-| Optimizer                 | Adam  |
-| Starting learning rate    | 1e-4  |
-| Fine-tuning learning rate | 1e-5  |
-| Kfold                     | 3     |
+| Hyperparameter | Value |
+| -------------- | ----- |
+| Batch size     | 32    |
+| Epochs         | 10    |
+| Optimizer      | Adam  |
+| Learning rate  | 1e-4  |
+| Kfold          | 3     |
 
 ## Architecture 
 
@@ -241,34 +240,34 @@ What is the architecture of your final model ? How many trainable parameters doe
 | block_13_project_BN                             | (None, 7, 7, 160)    | 640     |
 | block_14_expand                                 | (None, 7, 7, 960)    | 153600  |
 | block_14_expand_BN                              | (None, 7, 7, 960)    | 3840    |
-| block_14_expand_relu                            | (None, 7, 7, 960)    | 0       | 
-| block_14_depthwise                              | (None, 7, 7, 960)    | 8640    | 
-| block_14_depthwise_BN                           | (None, 7, 7, 960)    | 3840    | 
-| block_14_depthwise_relu                         | (None, 7, 7, 960)    | 0       | 
-| block_14_project                                | (None, 7, 7, 160)    | 153600  | 
-| block_14_project_BN                             | (None, 7, 7, 160)    | 640     | 
-| block_14_add (Add)                              | (None, 7, 7, 160)    | 0       | 
-| block_15_expand                                 | (None, 7, 7, 960)    | 153600  | 
-| block_15_expand_BN                              | (None, 7, 7, 960)    | 3840    | 
-| block_15_expand_relu                            | (None, 7, 7, 960)    | 0       | 
-| block_15_depthwise                              | (None, 7, 7, 960)    | 8640    | 
-| block_15_depthwise_BN                           | (None, 7, 7, 960)    | 3840    | 
-| block_15_depthwise_relu                         | (None, 7, 7, 960)    | 0       | 
-| block_15_project                                | (None, 7, 7, 160)    | 153600  | 
-| block_15_project_BN                             | (None, 7, 7, 160)    | 640     | 
-| block_15_add (Add)                              | (None, 7, 7, 160)    | 0       | 
-| block_16_expand                                 | (None, 7, 7, 960)    | 153600  | 
-| block_16_expand_BN                              | (None, 7, 7, 960)    | 3840    | 
-| block_16_expand_relu                            | (None, 7, 7, 960)    | 0       | 
-| block_16_depthwise                              | (None, 7, 7, 960)    | 8640    | 
-| block_16_depthwise_BN                           | (None, 7, 7, 960)    | 3840    | 
-| block_16_depthwise_relu                         | (None, 7, 7, 960)    | 0       | 
-| block_16_project                                | (None, 7, 7, 320)    | 307200  | 
-| block_16_project_BN                             | (None, 7, 7, 320)    | 1280    | 
-| Conv_1 (Conv2D)                                 | (None, 7, 7, 1280)   | 409600  | 
-| Conv_1_bn (BatchNormalization)                  | (None, 7, 7, 1280)   | 5120    | 
-| out_relu (ReLU)                                 | (None, 7, 7, 1280)   | 0       | 
-| sequential_130 (Sequential)                     | (None, 4)            | 82244   | 
+| block_14_expand_relu                            | (None, 7, 7, 960)    | 0       |
+| block_14_depthwise                              | (None, 7, 7, 960)    | 8640    |
+| block_14_depthwise_BN                           | (None, 7, 7, 960)    | 3840    |
+| block_14_depthwise_relu                         | (None, 7, 7, 960)    | 0       |
+| block_14_project                                | (None, 7, 7, 160)    | 153600  |
+| block_14_project_BN                             | (None, 7, 7, 160)    | 640     |
+| block_14_add (Add)                              | (None, 7, 7, 160)    | 0       |
+| block_15_expand                                 | (None, 7, 7, 960)    | 153600  |
+| block_15_expand_BN                              | (None, 7, 7, 960)    | 3840    |
+| block_15_expand_relu                            | (None, 7, 7, 960)    | 0       |
+| block_15_depthwise                              | (None, 7, 7, 960)    | 8640    |
+| block_15_depthwise_BN                           | (None, 7, 7, 960)    | 3840    |
+| block_15_depthwise_relu                         | (None, 7, 7, 960)    | 0       |
+| block_15_project                                | (None, 7, 7, 160)    | 153600  |
+| block_15_project_BN                             | (None, 7, 7, 160)    | 640     |
+| block_15_add (Add)                              | (None, 7, 7, 160)    | 0       |
+| block_16_expand                                 | (None, 7, 7, 960)    | 153600  |
+| block_16_expand_BN                              | (None, 7, 7, 960)    | 3840    |
+| block_16_expand_relu                            | (None, 7, 7, 960)    | 0       |
+| block_16_depthwise                              | (None, 7, 7, 960)    | 8640    |
+| block_16_depthwise_BN                           | (None, 7, 7, 960)    | 3840    |
+| block_16_depthwise_relu                         | (None, 7, 7, 960)    | 0       |
+| block_16_project                                | (None, 7, 7, 320)    | 307200  |
+| block_16_project_BN                             | (None, 7, 7, 320)    | 1280    |
+| Conv_1 (Conv2D)                                 | (None, 7, 7, 1280)   | 409600  |
+| Conv_1_bn (BatchNormalization)                  | (None, 7, 7, 1280)   | 5120    |
+| out_relu (ReLU)                                 | (None, 7, 7, 1280)   | 0       |
+| sequential_130 (Sequential)                     | (None, 4)            | 82244   |
 
 
 ## Transfer learning
