@@ -1,3 +1,4 @@
 dataset_images/
 dataset_test/
 dataset_train/
+*.pdf

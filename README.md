@@ -79,6 +79,8 @@ We also used the following data augmentation:
 
 We can see that the preprocessing makes the images easier to read and the features are more visible. We hope that the data augmentation will help the model to learn the features of the keys.
 
+We zoom out
+
 <P style="page-break-before: always">
 
 # Model creation
@@ -96,6 +98,7 @@ Because we use transfer learning we don't have to worry about the architecture o
 | Optimizer                 | Adam  |
 | Starting learning rate    | 1e-4  |
 | Fine-tuning learning rate | 1e-5  |
+| Kfold                     | 3     |
 
 ## Architecture 
 
