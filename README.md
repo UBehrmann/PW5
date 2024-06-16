@@ -11,61 +11,67 @@
 
 # Introduction
 
-We wanted to do a CNN model with objects which everyone has and thus not difficult to get a large dataset. We chose to do a model with keys. We looked up what different type of keys existed and found this graphic which shows the most common types of keys.
+We aimed to create a CNN model using objects that are common and easily accessible, making it feasible to gather a large dataset. We decided to build a model with keys. After researching the different types of keys, we found a graphic illustrating the most common types.
 
 <img src="imgs/key_types.jpeg" width="500">
 
-We don't have a particular use case for this model. We just wanted to see if we could make a model that could recognize the type of key.
+We don't have a specific use case for this model; our goal was simply to see if we could create a model capable of recognizing different types of keys.
 
-We then asked our friends and family to send us pictures of their keys. We got a lot of pictures but not enough to make a train and a test set. We then decided to use the internet to get more pictures. 
+To gather data, we asked our friends and family to send us pictures of their keys. Additionally, we planned to supplement our dataset with images from the internet to either enlarge or balance the dataset, especially if we didn't receive enough images of a particular key type.
 
-Here are some examples of the pictures we got:
+Here are some examples of the pictures we collected:
 
 <img src="imgs/key_examples.png" width="500" alt="Key examples">
 
-We will use transfer learning to train the model. We will use the MobileNetV2 as the base model and we will add a few layers on top of it.
+We will use transfer learning with MobileNetV2 as the base model, adding a few custom layers on top of it.
+
+To enhance model learning, we will preprocess the data and employ data augmentation techniques to increase the size and diversity of the dataset.
 
 <P style="page-break-before: always">
 
 # The problem
 
-We decided to only choose 4 types of keys to make the model easier to train. We chose the following keys:
+We decided to focus on only 4 types of keys to make the model easier to train. We chose the following keys:
 
-- Cylinder key (Because their are the most common as house keys)
-- Dimple key (Because they are also very common also as house keys)
-- Laser track key (Because most car keys are laser track keys)
-- Mortice key (Because they are very different from the other keys and their are often used for doors inside houses)
+- Cylinder key (because they are the most common as house keys)
+- Dimple key (because they are also very common as house keys)
+- Laser track key (because most car keys are laser track keys)
+- Mortice key (because they are very different from the other keys and are often used for doors inside houses)
 
-We got the following distribution of the keys:
+We obtained the following distribution of the keys:
 
 <img src="imgs/Number of images per class.png" width="500" alt="Key distribution all data">
 
-We can see that the distribution of the keys is not equal. Mostly because we didn't get a lot of pictures of the dimple, laser track and mortice keys. That is why we decided to use the pictures we got from the internet to make the train dataset and we used the pictures we got from our friends and family to make the test dataset.
+We can see that the distribution of the keys is not equal, primarily because we didn't get many pictures of dimple, laser track, and mortice keys. To address this, we decided to use the pictures we obtained from the internet to create the training dataset, and the pictures we collected from our friends and family to create the test dataset.
 
-Keys are very similar to each other and it is difficult to differentiate them. The most difficult to differentiate are the dimple and the laser track keys. The cylinder and the mortice keys are easier to differentiate, because they don't have the same shape. Dimple and laser track keys have the same shape but the inside of the key is different.
+Keys are very similar to each other, making it difficult to differentiate them. The most challenging to differentiate are the dimple and laser track keys. In contrast, cylinder and mortice keys are easier to differentiate because they have distinct shapes. Dimple and laser track keys share the same shape, but their internal features are different.
 
 <P style="page-break-before: always">
 
 # Data preparation
 
-We preprocessing the data to make it easier for the model to learn. We also used data augmentation to increase the size of the dataset. 
+We preprocessed the data to make it easier for the model to learn. Additionally, we used data augmentation to increase the size of the dataset. After some testing, we incorporated edge detection into the preprocessing to make the features of the keys more visible.
 
+## Preprocessing
 
-
-## After preprocessing
-
-We used the following preprocessing:
+We used the following preprocessing steps:
 
 - Resizing the images to 224x224
-- Rescale the images to 1/255
+- Rescaling the images by 1/255
 
-The resizing is necessary because the base model we will build on top of only accepts images of size 224x224. We don't crop to aspect ratio because we want to keep all the features of the keys.
+The resizing is necessary because the input layer of the model we are building only accepts images of size 224x224. We do not crop to aspect ratio because we want to retain all the features of the keys without cutting them off.
+
+### Example of preprocessing
 
 <img src="imgs/Preprocessed without edge detection.png" width="500" alt="Preprocessed without edge detection">
 
-## After preprocessing with edge detection
+A lot of pictures became wider due to resizing. We hope that the model will still be able to learn the features of the keys despite this change, as the test set will also undergo the same preprocessing.
 
-We chose to make a edge detection preprocessing. We used the following code to do the edge detection:
+<P style="page-break-before: always">
+
+## Edge detection
+
+We chose to add edge detection preprocessing to help the CNN better extract features that depend on the contours of the keys. The edge detection will make the edges of the keys white and the rest of the image black. We used the following code to perform the edge detection:
 
 ```python
 def edge_detection(image):
@@ -88,46 +94,69 @@ def edge_detection(image):
 
     return edges
 ```
+### Explanation of the code
 
-The edge detection will make the edges of the keys white and the rest of the image black. We hope that this will help the model to learn the features of the keys.
+We begin by converting the input image to a grayscale image, then add a batch dimension to the grayscale image to make it compatible with TensorFlow operations. Next, Sobel edge detection is applied to identify the edges in the grayscale image. The magnitude of these edges is then calculated and clipped to ensure the values are within the range of 0 to 1. After processing, the resulting edge-detected image, which is still in grayscale, is converted back to an RGB image. Finally, the code returns this edge-detected RGB image.
+
+### Example of edge detection
 
 <img src="imgs/Preprocessed with edge detection.png" width="500" alt="Key examples preprocessed">
 
-## After data augmentation
+We can see that the features of the keys are more visible with the edge detection preprocessing. However, some details of the keys are also lost. Additionally, the background of the images introduces noise in the edge detection preprocessing.
 
-We also used the following data augmentation:
+## Data augmentation
+
+We also applied the following data augmentation techniques:
 
 - Random rotation
 - Random zoom
 - Random horizontal flip
 
-We chose to not use a specific seed for these augmentations. We also change teh fillings of the images to black, when the images are rotated or zoomed out. We chose black because the edge detection preprocessor will transform most of the image to black and only keep the edges white. 
+We chose not to use a specific seed for these augmentations. Additionally, we changed the fill color of the images to black when they are rotated or zoomed out. We chose black because the edge detection preprocessor transforms most of the image to black and keeps only the edges white.
+
+### Example of data augmentation
 
 <img src="imgs/Augmented.png" width="500" alt="Key examples augmented">
 
-We can see that the preprocessing makes the images easier to read and the features are more visible. We hope that the data augmentation will help the model to learn the features of the keys.
+We can see that the data augmentation is working effectively. The images are being rotated, zoomed, and flipped. The features of the keys remain visible, and not many details are lost. The fill areas are noticeable only in images with a non-monochrome background.
 
 <P style="page-break-before: always">
 
 # Model creation
 
-describe how did you proceed to come up with a final model (model selection methodology, hyper-parameter exploration, cross-validation)
+Because we use transfer learning, we don't have to worry about the architecture of the base model. We only need to add a few layers on top of it.
 
-Because we use transfer learning we don't have to worry about the architecture of the base model. We only have to add a few layers on top of it. 
+We added the following layers:
 
-## hyperparameters 
+- A global average pooling layer
+- A dense layer with 254 units and a ReLU activation function
+- A dropout layer with a dropout rate of 0.3
+- A dense layer with 4 units and a softmax activation function
 
-| Hyperparameter | Value |
-| -------------- | ----- |
-| Batch size     | 32    |
-| Epochs         | 10    |
-| Optimizer      | Adam  |
-| Learning rate  | 1e-4  |
-| Kfold          | 3     |
+The last layer is the output layer. It has 4 units because we have 4 classes. The softmax activation function is used because we have a multi-class classification problem.
+
+We used the RMSprop optimizer because it is well-suited for transfer learning. We used the sparse categorical crossentropy loss function because we have a multi-class classification problem.
+
+Additionally, we used k-fold cross-validation to evaluate the model, opting for 3 folds due to our limited data.
+
+We also added an early stopping callback to halt the training if the validation loss doesn't decrease for 3 epochs.
+
+## Summary of hyperparameters 
+
+| Hyperparameter | Value                         |
+| -------------- | ----------------------------- |
+| Batch size     | 32                            |
+| Epochs         | 10                            |
+| Optimizer      | RMSprop                       |
+| Learning rate  | 1e-4                          |
+| Kfold          | 3                             |
+| Loss function  | SparseCategoricalCrossentropy |
 
 ## Architecture 
 
-What is the architecture of your final model ? How many trainable parameters does it have? 
+
+
+### Parameters
 
 |                      |                     |
 | -------------------- | ------------------: |
@@ -295,14 +324,15 @@ What is the architecture of your final model ? How many trainable parameters doe
 | out_relu (ReLU)                                 | (None, 7, 7, 1280)   | 0       |
 | sequential_130 (Sequential)                     | (None, 4)            | 82244   |
 
-
 ## Transfer learning
 
-We used transfer learning because we didn't have enough data to train the model from scratch. We froze the base model. We then added our layers on top of the base model.
+We used transfer learning because we didn't have enough data to train the model from scratch. We froze the base model and then added our layers on top of it.
+
+We hope that the model's prior training on the keyword "key" will help it learn the features of the specific key types more effectively.
 
 ### "Fine tuning"
 
-We've tried to fine tune the model. For that we trained the model with the base model frozen. Then we unfroze a few layers of the base model, changed the learning rate of the optimizer and trained the whole model. This way we could fine tune the features the base model learned and optimize the recognition of the keys.
+We've tried to fine-tune the model. To do this, we first trained the model with the base model frozen. Then, we unfroze a few layers of the base model, adjusted the optimizer's learning rate, and trained the entire model. This approach allowed us to fine-tune the features the base model had learned and optimize the recognition of the keys.
 
 ```python	
 model = get_model() # We reinitialize the model
@@ -335,31 +365,79 @@ fine_tune_history = model.fit(
 )
 ```
 
-We didn't see any improvement when we fine tuned the model. We think that the base model is already very good at recognizing objects and that the features it learned are already very good.
+We didn't see any improvement when we fine-tuned the model. The training time more than doubled, and the validation accuracy remained the same or even worsened compared to without fine-tuning. We believe the base model is already highly proficient at recognizing objects, and the features it has learned are already very effective.
 
-That is why we decided to keep the base model frozen and only train the layers we added on top of the base model.
+Therefore, we decided to keep the base model frozen and only train the layers we added on top of it.
 
 <P style="page-break-before: always">
 
+## Training
+
+We trained the model on images without edge detection preprocessing and then included the same images with edge detection preprocessing in the training set. After that, we augmented both sets of images (with and without edge detection) and added them to the training set.
+
+This approach allowed us to quadruple the size of the training set. We applied the same process to the validation set.
+
+We hope this will help the model learn the features of the keys more effectively.
+
 # Results
 
-describe the experiments you performed with the model both off-line (running in your notebooks with your own-collected images) and on-line (running in the smartphone and processing images captured in the “wild”). 
+The training and validation performance of the model is shown in the following graph:
 
 <img src="imgs/training_and_validation_performance.png" width="500" alt="Training and validation performance">
 
-## Confusion matrix
+We observed that the model is overfitting. After 6 epochs, the training accuracy reaches 100%, but the validation accuracy stagnates at 80-85%.
+
+We saved the three trained models and selected the one with the best validation accuracy to evaluate the model on the test set.
+
+## Confusion matrix of the test set
+
+We wanted to see if the model performs better with or without the edge detection preprocessing. Below are the confusion matrices for both scenarios:
+
+- **Without Edge Detection Preprocessing:**
+The first confusion matrix represents the model's performance without the edge detection preprocessing.
+
+- **With Edge Detection Preprocessing:**
+The second confusion matrix represents the model's performance with the edge detection preprocessing.
+
+Comparing these matrices will help us understand the impact of edge detection preprocessing on the model's ability to recognize key types.
+
+### Confusion matrix without edge detection
 
 <img src="imgs/Confusion matrix without edge detection.png" width="500" alt="Confusion matrix">
 
+### Confusion matrix with edge detection
+
 <img src="imgs/Confusion matrix with edge detection.png" width="500" alt="Confusion matrix with edge detection">
 
-## F1-scores
+We can see that the model performs roughly the same with or without the edge detection preprocessing. With edge detection preprocessing, the model shows slightly more confusion across all classes.
+
+The model without edge detection recognizes the keys more accurately overall. The biggest confusion occurs between cylinder and dimple keys. Additionally, some cylinder keys are misclassified as laser track keys.
+
+Dimples and laser track keys are the types for which we have the least amount of images. This limited data makes it difficult to assess the model's ability to accurately recognize these keys. We would need more images of these key types to be certain of the model's performance.
+
+## F1-scores of the test set
 
 <img src="imgs/f1_scores.png" width="500" alt="F1 scores">
 
-c. Provide the results you have after evaluating your model on the test set. Comment if the performance on the test set is close to the validation performance. What about the performance of the system in the real world ? 
+| Key Type             | F1-Score               |
+| -------------------- | ---------------------- |
+| Cylinder             | 0.6976744186046512     |
+| Dimple               | 0.6222222222222222     |
+| Laser Track          | 0.5806451612903226     |
+| Mortice              | 0.8750000000000001     |
+| **Weighted Average** | **0.7068301003822385** |
 
-d. Present an analysis of the relevance of the trained system using the Class Activation Map methods (grad-cam) 
+Because we have more cylinder key images in our test set than the other types, there's increased confusion between the cylinder key and the other keys. However, the cylinder key still achieves an F1-score of around 0.69.
+
+The F1-score for the dimple key is only 0.62. Many cylinder keys were misclassified as dimple keys, and a few dimple keys were misclassified as cylinder keys. This suggests that the model may not have been able to learn the distinctive features of the dimple keys well enough.
+
+The laser track key has an F1-score of 0.58, which, while not terrible, is the lowest among our test results. Similar to the dimple key, some cylinder keys were misclassified as laser track keys.
+
+The best F1-score is for the mortice key, at 0.87. The mortice key's distinct shape and visible features likely contribute to the model's higher accuracy in recognizing it. This key is very different from the other types, making it easier for the model to identify.
+
+## Real-world tests
+
+We tried to save the model and run it on our smartphones, but we couldn't get "tflite_support" to work. We made sure to use the correct versions of TensorFlow and tflite_support, but version 0.4.4 of tflite_support was not available. We even tried to completely rebuild the whole environment, but we still didn't succeed.
 
 ## Analysis of the relevance of the trained system using the Class Activation Map methods (grad-cam)
 
@@ -367,7 +445,7 @@ d. Present an analysis of the relevance of the trained system using the Class Ac
 
 <img src="imgs/gradcam.png" width="500" alt="Grad cam">
 
-e. Provide some of your misclassified images (test set and real-world tests) and comment those errors. 
+We observed that the model focuses on the features of the key to make predictions. However, it tends to concentrate primarily on the center of the key rather than on the defining features. This is likely why the model has difficulties accurately recognizing the keys.
 
 ## Misclassified images
 
@@ -375,20 +453,30 @@ e. Provide some of your misclassified images (test set and real-world tests) and
 
 <img src="imgs/misclassified_images.png" width="500" alt="Misclassified images">
 
+We observed that the background of the images significantly impacts the model's performance. In the training set, most images have a white or uniform background. In the test set, however, the background varies greatly since the images were provided by our friends and family. This discrepancy likely contributes to the model's difficulties in accurately recognizing the keys.
+
 ### Misclassified images with grad cam
 
 <img src="imgs/misclassified_gradcam.png" width="500" alt="Misclassified images with grad cam">
 
-f. Based on your results how could you improve your dataset ?  
+We can see the same issue in the misclassified images. The model tends to focus on the center of the key or the area around the key, rather than on the defining features of the key. This misfocus contributes to the inaccuracies in key classification.
 
 ## Improving the dataset
 
+We believe the training set lacks images with diverse backgrounds.
 
+We attempted to add a filter to remove the background from the images, but it also removed key features, rendering the images ineffective for training. It would likely be more effective to find additional images with varying backgrounds rather than trying to remove the backgrounds from existing images.
 
-g. Observe which classes are confused. Does it surprise you? In your opinion, what can cause those confusions ?  What happens when you use your embedded system to recognize objects that don’t belong to any classes in your dataset ? How does your system work if your object is placed in a different background ?
+<P style="page-break-before: always">
 
 # Conclusion
 
-finalize your report with some conclusions, summarize your results, mention the limits of your system and potential future work
+We have built a model that can recognize different types of keys. The overall F1-score of the model is 0.70, which is not bad considering the limited dataset. The model performs best on mortice keys, with an F1-score of 0.87. The model struggles most with laser track keys, with an F1-score of 0.58, which isn't terrible considering the difficulty of distinguishing small details in the images.
+
+The primary issue with the model is the limited size of the training dataset. Additionally, the lack of variety in the image backgrounds in the training set hinders the model's ability to recognize keys in diverse real-world scenarios. This limitation likely contributes to the model's tendency to overfit to specific features of the keys.
+
+Unfortunately, we couldn't get the model to work on our smartphones. We believe that the model could potentially function on smartphones, although it might not perform well due to the aforementioned issues.
+
+We considered creating another model to remove the background from the images, which could be applied before the MobileNetV2 model. However, this would require a significant amount of work and time, which we did not have. Such a model could have helped in improving the overall performance by providing a cleaner input for key recognition.
 
 </div>
