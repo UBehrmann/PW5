@@ -21,7 +21,7 @@ We then asked our friends and family to send us pictures of their keys. We got a
 
 Here are some examples of the pictures we got:
 
-<img src="imgs/key_examples.jpeg" width="500" alt="Key examples">
+<img src="imgs/key_examples.png" width="500" alt="Key examples">
 
 We will use transfer learning to train the model. We will use the MobileNetV2 as the base model and we will add a few layers on top of it.
 
@@ -38,11 +38,7 @@ We decided to only choose 4 types of keys to make the model easier to train. We 
 
 We got the following distribution of the keys:
 
-<img src="imgs/key_distribution_all_data.jpeg" width="500" alt="Key distribution all data">
-
-<img src="imgs/key_distribution_train_data.jpeg" width="500" alt="Key distribution train data">
-
-<img src="imgs/key_distribution_test_data.jpeg" width="500" alt="Key distribution test data">
+<img src="imgs/Number of images per class.png" width="500" alt="Key distribution all data">
 
 We can see that the distribution of the keys is not equal. Mostly because we didn't get a lot of pictures of the dimple, laser track and mortice keys. That is why we decided to use the pictures we got from the internet to make the train dataset and we used the pictures we got from our friends and family to make the test dataset.
 
@@ -54,10 +50,50 @@ Keys are very similar to each other and it is difficult to differentiate them. T
 
 We preprocessing the data to make it easier for the model to learn. We also used data augmentation to increase the size of the dataset. 
 
+
+
+## After preprocessing
+
 We used the following preprocessing:
 
 - Resizing the images to 224x224
 - Rescale the images to 1/255
+
+The resizing is necessary because the base model we will build on top of only accepts images of size 224x224. We don't crop to aspect ratio because we want to keep all the features of the keys.
+
+<img src="imgs/Preprocessed without edge detection.png" width="500" alt="Preprocessed without edge detection">
+
+## After preprocessing with edge detection
+
+We chose to make a edge detection preprocessing. We used the following code to do the edge detection:
+
+```python
+def edge_detection(image):
+    # Convert to grayscale
+    gray = tf.image.rgb_to_grayscale(image)
+    gray = tf.expand_dims(gray, axis=0)  # Add batch dimension
+    
+    # Apply Sobel edge detection
+    edges = tf.image.sobel_edges(gray)
+    edges = tf.sqrt(tf.reduce_sum(tf.square(edges), axis=-1))
+    edges = tf.clip_by_value(
+        edges,
+        clip_value_min=0,
+        clip_value_max=1
+    )
+
+    # Convert back to RGB
+    edges = tf.squeeze(edges, axis=0)  # Remove channel dimension
+    edges = tf.image.grayscale_to_rgb(edges)  # Convert to RGB
+
+    return edges
+```
+
+The edge detection will make the edges of the keys white and the rest of the image black. We hope that this will help the model to learn the features of the keys.
+
+<img src="imgs/Preprocessed with edge detection.png" width="500" alt="Key examples preprocessed">
+
+## After data augmentation
 
 We also used the following data augmentation:
 
@@ -65,21 +101,11 @@ We also used the following data augmentation:
 - Random zoom
 - Random horizontal flip
 
-**Before preprocessing**
+We chose to not use a specific seed for these augmentations. We also change teh fillings of the images to black, when the images are rotated or zoomed out. We chose black because the edge detection preprocessor will transform most of the image to black and only keep the edges white. 
 
-<img src="imgs/key_examples.jpeg" width="500" alt="Key examples">
-
-**After preprocessing**
-
-<img src="imgs/key_examples_preprocessed.jpeg" width="500" alt="Key examples preprocessed">
-
-**After data augmentation**
-
-<img src="imgs/key_examples_augmented.jpeg" width="500" alt="Key examples augmented">
+<img src="imgs/Augmented.png" width="500" alt="Key examples augmented">
 
 We can see that the preprocessing makes the images easier to read and the features are more visible. We hope that the data augmentation will help the model to learn the features of the keys.
-
-We zoom out
 
 <P style="page-break-before: always">
 
@@ -274,7 +300,9 @@ What is the architecture of your final model ? How many trainable parameters doe
 
 We used transfer learning because we didn't have enough data to train the model from scratch. We froze the base model. We then added our layers on top of the base model.
 
-Then we unfroze a few layers of the base model, changed the learning rate of the optimizer and trained the whole model. This way we could fine tune the features the base model learned and optimize the recognition of the keys.
+### "Fine tuning"
+
+We've tried to fine tune the model. For that we trained the model with the base model frozen. Then we unfroze a few layers of the base model, changed the learning rate of the optimizer and trained the whole model. This way we could fine tune the features the base model learned and optimize the recognition of the keys.
 
 ```python	
 model = get_model() # We reinitialize the model
@@ -307,23 +335,55 @@ fine_tune_history = model.fit(
 )
 ```
 
+We didn't see any improvement when we fine tuned the model. We think that the base model is already very good at recognizing objects and that the features it learned are already very good.
+
+That is why we decided to keep the base model frozen and only train the layers we added on top of the base model.
+
 <P style="page-break-before: always">
 
 # Results
 
 describe the experiments you performed with the model both off-line (running in your notebooks with your own-collected images) and on-line (running in the smartphone and processing images captured in the “wild”). 
 
-a. Provide your plots and confusion matrices 
+<img src="imgs/training_and_validation_performance.png" width="500" alt="Training and validation performance">
 
-b. Provide the f-score you obtain for each of your classes. 
+## Confusion matrix
+
+<img src="imgs/Confusion matrix without edge detection.png" width="500" alt="Confusion matrix">
+
+<img src="imgs/Confusion matrix with edge detection.png" width="500" alt="Confusion matrix with edge detection">
+
+## F1-scores
+
+<img src="imgs/f1_scores.png" width="500" alt="F1 scores">
 
 c. Provide the results you have after evaluating your model on the test set. Comment if the performance on the test set is close to the validation performance. What about the performance of the system in the real world ? 
 
 d. Present an analysis of the relevance of the trained system using the Class Activation Map methods (grad-cam) 
 
+## Analysis of the relevance of the trained system using the Class Activation Map methods (grad-cam)
+
+### Grad cam activation map example
+
+<img src="imgs/gradcam.png" width="500" alt="Grad cam">
+
 e. Provide some of your misclassified images (test set and real-world tests) and comment those errors. 
 
+## Misclassified images
+
+### Misclassified images of the test set
+
+<img src="imgs/misclassified_images.png" width="500" alt="Misclassified images">
+
+### Misclassified images with grad cam
+
+<img src="imgs/misclassified_gradcam.png" width="500" alt="Misclassified images with grad cam">
+
 f. Based on your results how could you improve your dataset ?  
+
+## Improving the dataset
+
+
 
 g. Observe which classes are confused. Does it surprise you? In your opinion, what can cause those confusions ?  What happens when you use your embedded system to recognize objects that don’t belong to any classes in your dataset ? How does your system work if your object is placed in a different background ?
 
